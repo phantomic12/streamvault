@@ -26,7 +26,7 @@ RSpec.describe PlaybackStartService do
     content_ref = ContentRef.new(imdb_id: "tt1375666", type: "movie")
     allow(resolver).to receive(:start).with(content_ref).and_return(stream_result)
     allow(catalog).to receive(:metadata)
-      .with("tt1375666", "movie")
+      .with("tt1375666", "movie", include_ratings: false)
       .and_return(ServiceResult.success(runtime_seconds: 7_200))
 
     result = service.start(imdb_id: "tt1375666", type: "movie", title: "Inception")

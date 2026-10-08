@@ -8,7 +8,7 @@ module Playback
     end
 
     def next_after(content_ref)
-      result = @catalog.metadata(content_ref.imdb_id, "show")
+      result = @catalog.metadata(content_ref.imdb_id, "show", include_ratings: false)
       return ServiceResult.failure("Could not load episode list") if result.failure?
 
       episodes = Array(result.data[:episodes])

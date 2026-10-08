@@ -66,6 +66,7 @@ RSpec.describe Playback::EpisodeSequence do
     current = ContentRef.new(imdb_id: "tt0903747", type: "show", season: 1, episode: 2)
 
     expect(sequence.next_after(current).data.to_h).to include(season: 2, episode: 1)
+    expect(catalog).to have_received(:metadata).with("tt0903747", "show", include_ratings: false)
   end
 
   it "reports series completion at the finale" do
@@ -120,5 +121,22 @@ RSpec.describe Playback::ContinueWatchingQuery do
       .and_return(ServiceResult.failure("No more episodes", :series_complete))
 
     expect(query.call.data).to be_empty
+  end
+
+  it "bounds next-episode resolution to the visible row" do
+    30.times do |index|
+      create(:playback_progress, :episode, user: user,
+        progress_seconds: 2_400, duration_seconds: 2_400,
+        watched_at: (index + 1).minutes.ago)
+    end
+    next_ref = ContentRef.new(imdb_id: "tt0903747", type: "show", season: 1, episode: 2)
+    allow(episode_sequence).to receive(:next_after).and_return(ServiceResult.success(next_ref))
+
+    items = query.call.data
+
+    expect(items.length).to eq(described_class::LIMIT)
+    expect(episode_sequence).to have_received(:next_after)
+      .at_most(described_class::LIMIT + described_class::RESOLUTION_BATCH - 1).times
+    expect(items.map { |item| item[:last_watched] }).to eq(items.map { |item| item[:last_watched] }.sort.reverse)
   end
 end

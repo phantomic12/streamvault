@@ -5,11 +5,14 @@ class HomeController < ApplicationController
 
   def index
     catalog = Catalog::CinemetaClient.new
+    # The four remote catalogs are fetched over HTTP; run them while the local
+    # queries below execute instead of afterwards.
+    catalogs_thread = Thread.new { HomeCatalogService.new(catalog).call }
     @recommendations = RecommendationService.for(current_user)
     @continue_watching = fetch_continue_watching
     @recently_added = current_user.collection_entries.library.where("created_at > ?", 2.weeks.ago).recently_added.limit(20)
     @wishlist_preview = current_user.collection_entries.wishlist.recently_added.limit(20)
-    catalogs = HomeCatalogService.new(catalog).call
+    catalogs = catalogs_thread.value
     @popular = catalogs.fetch(:popular)
     @popular_shows = catalogs.fetch(:popular_shows)
     @trending = catalogs.fetch(:trending)

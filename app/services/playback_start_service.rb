@@ -129,7 +129,7 @@ class PlaybackStartService
   end
 
   def metadata_duration_seconds(imdb_id, type, season, episode)
-    result = @catalog.metadata(imdb_id, type)
+    result = @catalog.metadata(imdb_id, type, include_ratings: false)
     return 0 if result.failure?
 
     if type == "show" && season.present? && episode.present?

@@ -3,6 +3,7 @@
 module Playback
   class ContinueWatchingQuery
     LIMIT = 20
+    RESOLUTION_BATCH = 8
 
     def initialize(user, episode_sequence: EpisodeSequence.new)
       @user = user
@@ -13,13 +14,31 @@ module Playback
       entries = (unfinished_movies + latest_show_episodes)
         .sort_by { |entry| [ entry.watched_at, entry.id ] }
         .reverse
-      ServiceResult.success(entries.filter_map { |entry| item(entry) }.first(LIMIT))
+      ServiceResult.success(collect_items(entries))
     rescue StandardError => e
       Rails.logger.error("[Playback::ContinueWatchingQuery] #{e.class}: #{e.message}")
       ServiceResult.failure("Unable to load continue watching")
     end
 
     private
+
+    # Entries are already in presentation order. Resolving an item can trigger
+    # a metadata lookup (finished episodes need their successor), so items are
+    # resolved in small concurrent batches and building stops once LIMIT items
+    # are collected: the number of lookups is bounded by the visible row, not
+    # by the whole watch history.
+    def collect_items(entries)
+      items = []
+      entries.each_slice(RESOLUTION_BATCH) do |batch|
+        items.concat(resolve_batch(batch))
+        break if items.length >= LIMIT
+      end
+      items.first(LIMIT)
+    end
+
+    def resolve_batch(batch)
+      batch.map { |entry| Thread.new { item(entry) } }.filter_map(&:value)
+    end
 
     def unfinished_movies
       @user.playback_progresses.movies_only

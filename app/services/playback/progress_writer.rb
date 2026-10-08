@@ -52,7 +52,7 @@ module Playback
     end
 
     def metadata(content_ref)
-      result = @catalog.metadata(content_ref.imdb_id, content_ref.type)
+      result = @catalog.metadata(content_ref.imdb_id, content_ref.type, include_ratings: false)
       result.data if result.success?
     rescue StandardError
       nil

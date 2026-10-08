@@ -45,6 +45,31 @@ RSpec.describe "Home", type: :request do
     end
   end
 
+  describe "Continue Watching episode advancement" do
+    before { sign_in user }
+
+    it "renders the next episode for a completed episode" do
+      create(:playback_progress, :episode, user: user, imdb_id: "tt0903747",
+        title: "Breaking Bad", progress_seconds: 2_400, duration_seconds: 2_400, watched_at: 1.minute.ago)
+      stub_request(:get, %r{v3-cinemeta\.strem\.io/meta/series/tt0903747\.json})
+        .to_return(status: 200, body: {
+          "meta" => {
+            "id" => "tt0903747",
+            "name" => "Breaking Bad",
+            "videos" => [
+              { "season" => 1, "episode" => 1, "id" => "tt0903747001", "name" => "Pilot", "released" => "2008-01-20" },
+              { "season" => 1, "episode" => 2, "id" => "tt0903747002", "name" => "Cat's in the Bag...", "released" => "2008-01-27" }
+            ]
+          }
+        }.to_json, headers: { "Content-Type" => "application/json" })
+
+      get root_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("S01E02")
+    end
+  end
+
   describe "GET /" do
     context "when not authenticated" do
       it "redirects to login" do

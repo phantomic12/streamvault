@@ -37,19 +37,20 @@ module Catalog
       ServiceResult.failure("Search failed")
     end
 
-    def metadata(imdb_id, type)
+    def metadata(imdb_id, type, include_ratings: true)
       return ServiceResult.failure("IMDB ID is required") if imdb_id.blank?
 
       cache_key = "catalog/cinemeta/meta/#{type}/#{imdb_id}"
-      cached = @cache.read(cache_key)
-      return ServiceResult.success(cached) if cached
+      meta = @cache.read(cache_key)
+      unless meta
+        response = @connection.get("meta/#{cinemeta_type(type)}/#{imdb_id}.json")
+        return ServiceResult.failure("Metadata not found") unless response.success? && response.body.is_a?(Hash) && response.body["meta"]
 
-      response = @connection.get("meta/#{cinemeta_type(type)}/#{imdb_id}.json")
-      return ServiceResult.failure("Metadata not found") unless response.success? && response.body.is_a?(Hash) && response.body["meta"]
+        meta = normalize_metadata(response.body["meta"], type)
+        @cache.write(cache_key, meta, expires_in: CACHE_TTL)
+      end
 
-      result = normalize_metadata(response.body["meta"], type).merge(optional_ratings(imdb_id))
-      @cache.write(cache_key, result, expires_in: CACHE_TTL)
-      ServiceResult.success(result)
+      ServiceResult.success(include_ratings ? meta.merge(optional_ratings(imdb_id)) : meta)
     rescue Faraday::TimeoutError
       ServiceResult.failure("Metadata request timed out")
     rescue Faraday::ConnectionFailed

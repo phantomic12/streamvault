@@ -14,7 +14,7 @@ RSpec.describe "Next episode playback", type: :request do
   before do
     sign_in user
     allow(Catalog::CinemetaClient).to receive(:new).and_return(catalog)
-    allow(catalog).to receive(:metadata).with("tt0903747", "show")
+    allow(catalog).to receive(:metadata).with("tt0903747", "show", include_ratings: false)
       .and_return(ServiceResult.success(episodes: episodes))
   end
 

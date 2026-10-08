@@ -63,7 +63,7 @@ class ContentController < ApplicationController
 
     catalog = Catalog::CinemetaClient.new
 
-    meta = catalog.metadata(@imdb_id, @type)
+    meta = catalog.metadata(@imdb_id, @type, include_ratings: false)
     @show_title = meta.success? ? meta.data[:title] : @imdb_id
     @poster_url = meta.success? ? meta.data[:poster_url] : nil
     @episode_title = ""
