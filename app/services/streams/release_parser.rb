@@ -20,7 +20,8 @@ module Streams
       "DUTCH" => /\b(DUTCH|DUT|NL|NLD)\b/i,
       "POLISH" => /\b(POLISH|POL|PL)\b/i,
       "TURKISH" => /\b(TURKISH|TUR|TR)\b/i,
-      "SWEDISH" => /\b(SWEDISH|SWE|SV)\b/i
+      "SWEDISH" => /\b(SWEDISH|SWE|SV)\b/i,
+      "FINNISH" => /\b(FINNISH|FIN|FI)\b/i
     }.freeze
 
     def analyze(title:, filename: nil)

@@ -27,7 +27,8 @@ class SubdlSubtitleProvider
     "DUTCH" => "nl",
     "POLISH" => "pl",
     "TURKISH" => "tr",
-    "SWEDISH" => "sv"
+    "SWEDISH" => "sv",
+    "FINNISH" => "fi"
   }.freeze
 
   def initialize(api_key: ENV["SUBDL_API_KEY"], search_connection: nil, download_connection: nil)

@@ -21,7 +21,7 @@ class User < ApplicationRecord
     "KOREAN" => "Korean", "CHINESE" => "Chinese", "HINDI" => "Hindi",
     "ARABIC" => "Arabic", "PORTUGUESE" => "Portuguese", "RUSSIAN" => "Russian",
     "DUTCH" => "Dutch", "POLISH" => "Polish", "TURKISH" => "Turkish",
-    "SWEDISH" => "Swedish"
+    "SWEDISH" => "Swedish", "FINNISH" => "Finnish"
   }.freeze
 
   before_validation :set_default_languages, on: :create

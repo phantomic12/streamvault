@@ -26,6 +26,15 @@ RSpec.describe User, type: :model do
       expect(user.preferred_languages).to eq([ "ENG" ])
       expect(user.default_language).to eq("ENG")
     end
+
+    it "supports Finnish as a preferred stream language" do
+      user = create(:user)
+      user.update!(preferred_languages: [ "ENG", "FINNISH" ])
+
+      expect(user.reload.preferred_languages).to contain_exactly("ENG", "FINNISH")
+      expect(user.preferred_stream_languages).to include("FINNISH")
+      expect(user.stream_language_priority).to include("FINNISH")
+    end
   end
 
   describe "#has_realdebrid_key?" do
