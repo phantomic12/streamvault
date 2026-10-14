@@ -9,7 +9,8 @@ class WatchHistoryController < ApplicationController
       page: params.fetch(:page, 1),
       per_page: params.fetch(:per_page, 25)
     )
-    @entries = @pagination.items
+    # Child accounts only ever see titles within their rating limit.
+    @entries = parental_content_policy.filter(@pagination.items)
   end
 
   def destroy

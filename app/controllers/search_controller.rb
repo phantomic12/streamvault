@@ -12,6 +12,9 @@ class SearchController < ApplicationController
       all_results = result.success? ? result.data : []
       @error = result.failure? ? result.error_message : nil
 
+      # Child accounts only ever see titles within their rating limit.
+      all_results = parental_content_policy.filter(all_results)
+
       @pagination = PageSlice.from_array(
         all_results,
         page: params.fetch(:page, 1),

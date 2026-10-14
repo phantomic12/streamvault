@@ -9,9 +9,9 @@ class ContentController < ApplicationController
     @type = params[:type]
 
     return if reject_invalid_imdb_id!(@imdb_id) || reject_invalid_content_type!(@type)
+    return reject_restricted_content! unless parental_content_policy.allowed?(@imdb_id)
 
     catalog = Catalog::CinemetaClient.new
-
     meta_result = catalog.metadata(@imdb_id, @type)
     @metadata = meta_result.success? ? meta_result.data : nil
 
@@ -60,9 +60,9 @@ class ContentController < ApplicationController
     @episode = params[:episode]&.to_i
 
     return if reject_invalid_imdb_id!(@imdb_id) || reject_invalid_content_type!(@type)
+    return head :forbidden unless parental_content_policy.allowed?(@imdb_id)
 
     catalog = Catalog::CinemetaClient.new
-
     meta = catalog.metadata(@imdb_id, @type, include_ratings: false)
     @show_title = meta.success? ? meta.data[:title] : @imdb_id
     @poster_url = meta.success? ? meta.data[:poster_url] : nil
@@ -86,5 +86,16 @@ class ContentController < ApplicationController
     @streams_error = streams_result.failure? ? streams_result.error_message : nil
 
     render layout: false
+  end
+
+  private
+
+  # Child accounts may not access titles above their rating limit — never
+  # return their metadata or streams, even via a direct item URL.
+  def reject_restricted_content!
+    respond_to do |format|
+      format.html { redirect_to root_path, alert: "This content is not available for this account." }
+      format.any { head :forbidden }
+    end
   end
 end

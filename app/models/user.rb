@@ -31,6 +31,40 @@ class User < ApplicationRecord
 
   validates :display_name, length: { maximum: 50 }
 
+  # Child accounts / parental controls
+  CHILD_LOCK_MIN_LENGTH = 4
+  MAX_RATING_AGE_RANGE = 0..18
+  MAX_RATING_AGE_OPTIONS = [
+    [ "0+ — little kids (TV-Y, G)", 0 ],
+    [ "7+ — older kids (TV-Y7)", 7 ],
+    [ "8+ — (PG, TV-PG)", 8 ],
+    [ "13+ — teens (PG-13)", 13 ],
+    [ "14+ — (TV-14)", 14 ],
+    [ "17+ — older teens (R, TV-MA)", 17 ],
+    [ "18+ — everything, including unrated", 18 ]
+  ].freeze
+
+  attr_accessor :child_lock_password, :child_lock_password_confirmation, :child_lock_current_password
+
+  before_validation :digest_child_lock_password
+  after_save :clear_child_lock_credentials
+  validate :validate_child_account_settings
+
+  def child_lock_set?
+    child_lock_password_digest.present?
+  end
+
+  def valid_child_lock_password?(attempt)
+    # Compare against the persisted digest: during validation the
+    # in-memory digest may already hold a replacement that has not been
+    # saved yet, and the attempt must be checked against the old one.
+    digest = child_lock_password_digest
+    digest = child_lock_password_digest_was if persisted? && child_lock_password_digest_was.present?
+    return false if digest.blank? || attempt.blank?
+
+    Devise::Encryptor.compare(self.class, digest, attempt)
+  end
+
   def has_realdebrid_key?
     realdebrid_api_key.present?
   end
@@ -51,6 +85,74 @@ class User < ApplicationRecord
   end
 
   private
+
+  def digest_child_lock_password
+    return if child_lock_password.blank?
+
+    self.child_lock_password_digest = Devise::Encryptor.digest(self.class, child_lock_password)
+  end
+
+  # The credential accessors are one-shot: drop them after saving so a
+  # later save on the same instance does not re-apply a stale value.
+  def clear_child_lock_credentials
+    self.child_lock_password = nil
+    self.child_lock_password_confirmation = nil
+    self.child_lock_current_password = nil
+  end
+
+  def validate_child_account_settings
+    validate_max_rating_age
+    validate_child_lock_password
+    validate_child_lock_protection
+  end
+
+  def validate_max_rating_age
+    return unless child_account?
+
+    if max_rating_age.nil?
+      errors.add(:max_rating_age, "must be set for child accounts")
+    elsif !MAX_RATING_AGE_RANGE.cover?(max_rating_age)
+      errors.add(:max_rating_age, "must be between #{MAX_RATING_AGE_RANGE.begin} and #{MAX_RATING_AGE_RANGE.end}")
+    end
+  end
+
+  def validate_child_lock_password
+    return if child_lock_password.blank?
+
+    if child_lock_password.length < CHILD_LOCK_MIN_LENGTH
+      errors.add(:child_lock_password, "must be at least #{CHILD_LOCK_MIN_LENGTH} characters")
+    end
+    if child_lock_password_confirmation.present? && child_lock_password_confirmation != child_lock_password
+      errors.add(:child_lock_password_confirmation, "doesn't match")
+    end
+  end
+
+  def validate_child_lock_protection
+    # Enabling child status requires a lock password to exist — either
+    # one set previously or one provided with this change.
+    if child_account? && child_lock_password.blank? && child_lock_password_digest.blank?
+      errors.add(:child_lock_password, "must be set to enable child accounts")
+    end
+
+    return unless child_lock_change_requires_password?
+    return if valid_child_lock_password?(child_lock_current_password)
+
+    errors.add(:child_lock_current_password, "is incorrect")
+  end
+
+  # Turning child status off, changing the max rating age on a child
+  # account, and replacing the lock password itself are all protected
+  # changes that require the current child lock password.
+  def child_lock_change_requires_password?
+    return false unless persisted?
+
+    turning_off = child_account_changed? && !child_account?
+    changing_age = max_rating_age_changed? && (child_account_was || false)
+    changing_password = child_lock_password.present? &&
+      child_lock_password_digest_was.present? &&
+      !valid_child_lock_password?(child_lock_password)
+    turning_off || changing_age || changing_password
+  end
 
   def set_default_languages
     self.preferred_languages ||= [ "ENG" ]

@@ -45,6 +45,13 @@ class StreamingController < ApplicationController
     descriptor = PlaybackDescriptor.resolve(token: params[:playback], user: current_user)
     content_ref = descriptor.content_ref
 
+    # A playback token may predate the account becoming a child account —
+    # re-check the rating limit on every playback-page load.
+    unless parental_content_policy.allowed?(content_ref.imdb_id)
+      redirect_to root_path, alert: "This content is not available for this account."
+      return
+    end
+
     @source_token = descriptor.source_token
     @filename = descriptor.filename
     @imdb_id = content_ref.imdb_id

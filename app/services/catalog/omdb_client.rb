@@ -16,8 +16,12 @@ module Catalog
       @logger = logger
     end
 
+    def configured?
+      @api_key.present? && @api_key != "your_omdb_api_key_here"
+    end
+
     def ratings(imdb_id)
-      return {} if @api_key.blank? || @api_key == "your_omdb_api_key_here"
+      return {} unless configured?
 
       @cache.fetch("catalog/omdb/ratings/#{imdb_id}", expires_in: CACHE_TTL, race_condition_ttl: 30.seconds) do
         fetch_ratings(imdb_id)

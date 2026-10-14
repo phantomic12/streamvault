@@ -4,15 +4,19 @@ class PlaybackStartService
   MIN_KNOWN_DURATION_SECONDS = 60
   MAX_KNOWN_DURATION_SECONDS = 24 * 60 * 60
 
-  def initialize(user, streaming_service: Streams::Resolver.new(user), catalog: Catalog::CinemetaClient.new, logger: Rails.logger)
+  def initialize(user, streaming_service: Streams::Resolver.new(user), catalog: Catalog::CinemetaClient.new, parental: nil, logger: Rails.logger)
     @user = user
     @streaming_service = streaming_service
     @catalog = catalog
+    @parental = parental || ParentalControls::ContentPolicy.new(user)
     @logger = logger
   end
 
   def start(imdb_id:, type:, season: nil, episode: nil, title: nil, poster_url: nil, requested_duration: nil, selection: {})
     content_ref = ContentRef.new(imdb_id: imdb_id, type: type, season: season, episode: episode)
+    restricted = reject_restricted_content(content_ref)
+    return restricted if restricted
+
     stream_result = resolve_stream(content_ref, selection)
     return stream_result if stream_result.failure?
 
@@ -47,6 +51,9 @@ class PlaybackStartService
       season: target[:season],
       episode: target[:episode]
     )
+    restricted = reject_restricted_content(content_ref)
+    return restricted if restricted
+
     stream_result = @streaming_service.start(content_ref)
     return stream_result if stream_result.failure?
 
@@ -77,6 +84,15 @@ class PlaybackStartService
   end
 
   private
+
+  # Child accounts may never start playback of titles above their rating
+  # limit, whatever entry point (start/resume) requested it.  Returns a
+  # failure result when restricted, nil when playback may proceed.
+  def reject_restricted_content(content_ref)
+    return nil if @parental.allowed?(content_ref.imdb_id)
+
+    ServiceResult.failure("This content is not available for this account.")
+  end
 
   def resolve_stream(content_ref, selection)
     if selection[:resolve_url].present?

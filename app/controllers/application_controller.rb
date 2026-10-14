@@ -17,4 +17,11 @@ class ApplicationController < ActionController::Base
       format.json { render json: { error: "Not found" }, status: :not_found }
     end
   end
+
+  # Rating-limit policy for child accounts (no-op for regular accounts).
+  private
+
+  def parental_content_policy
+    ParentalControls::ContentPolicy.new(current_user)
+  end
 end

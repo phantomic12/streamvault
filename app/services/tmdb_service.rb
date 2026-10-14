@@ -77,6 +77,24 @@ class TmdbService
     ServiceResult.failure("TMDB error: #{e.message}")
   end
 
+  # Resolve the content certification for an IMDb ID (e.g. "PG-13",
+  # "TV-MA") via TMDB: movie release dates carry the MPAA certification,
+  # TV content ratings carry the US TV rating.  Prefers the US rating and
+  # falls back to the first non-blank certification from any region.
+  # Returns nil when TMDB has no rating for the title.
+  def certification_for_imdb_id(imdb_id)
+    return nil if imdb_id.blank?
+
+    info = find_by_imdb_id(imdb_id)
+    return nil unless info
+
+    if info[:type] == "movie"
+      movie_certification(info[:tmdb_id])
+    else
+      tv_certification(info[:tmdb_id])
+    end
+  end
+
   private
 
   # Resolve IMDb ID → TMDB ID and media type (movie or tv).
@@ -115,6 +133,41 @@ class TmdbService
     response = @conn.get("#{media_type}/#{tmdb_id}/external_ids")
     return nil unless response.success? && response.body.is_a?(Hash)
     response.body["imdb_id"].presence
+  end
+
+  def movie_certification(tmdb_id)
+    response = @conn.get("movie/#{tmdb_id}/release_dates")
+    return nil unless response.success? && response.body.is_a?(Hash)
+
+    entries = Array(response.body["results"]).map do |entry|
+      [ entry["iso_3166_1"], Array(entry["release_dates"]).map { |release| release["certification"] } ]
+    end
+    first_certification(entries)
+  end
+
+  def tv_certification(tmdb_id)
+    response = @conn.get("tv/#{tmdb_id}/content_ratings")
+    return nil unless response.success? && response.body.is_a?(Hash)
+
+    entries = Array(response.body["results"]).map do |entry|
+      [ entry["iso_3166_1"], [ entry["rating"] ] ]
+    end
+    first_certification(entries)
+  end
+
+  # entries is a list of [iso_3166_1, [certification, ...]] pairs.  The
+  # rating-age mapping is built on US ratings, so prefer those and only
+  # then fall back to the first non-blank value from any region.
+  def first_certification(entries)
+    us_entries = entries.select { |iso, _| iso == "US" }
+    [ us_entries, entries ].each do |group|
+      group.each do |_, values|
+        values.each do |value|
+          return value if value.to_s.strip.present?
+        end
+      end
+    end
+    nil
   end
 
   def extract_year(result)

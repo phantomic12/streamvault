@@ -127,6 +127,19 @@
             </div>
           </header>
 
+          <%# Child account banner %>
+          <% if current_user.child_account? %>
+            <div class="mx-6 mt-4 flex items-center gap-2.5 rounded-lg border border-sv-border bg-sv-surface px-4 py-2.5">
+              <svg class="w-5 h-5 shrink-0 text-sv-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              <p class="text-sm text-sv-text-muted">
+                <span class="font-medium text-white">Child account for age <%= current_user.max_rating_age %>.</span>
+                Search results and playback are restricted to titles rated for that age.
+              </p>
+            </div>
+          <% end %>
+
           <%# Flash messages %>
           <% if notice.present? %>
             <div class="flash-notice mx-6 mt-4" data-controller="flash" data-flash-target="message">

@@ -13,5 +13,13 @@ FactoryBot.define do
     trait :with_realdebrid_key do
       realdebrid_api_key { "TEST_RD_KEY_#{SecureRandom.hex(8)}" }
     end
+
+    # Age-restricted profile: toggled on with a settings lock ("lock-1234")
+    # and an age cap of 13.
+    trait :age_restricted do
+      child_account { true }
+      max_rating_age { 13 }
+      child_lock_password { "lock-1234" }
+    end
   end
 end

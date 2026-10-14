@@ -12,7 +12,8 @@ class LibraryController < ApplicationController
       page: params.fetch(:page, 1),
       per_page: params.fetch(:per_page, 25)
     )
-    @entries = @pagination.items
+    # Child accounts only ever see titles within their rating limit.
+    @entries = parental_content_policy.filter(@pagination.items)
 
     progress_rows = current_user.playback_progresses.where(imdb_id: @entries.map(&:imdb_id)).to_a
     @progress_map = progress_rows.group_by(&:imdb_id).transform_values do |rows|

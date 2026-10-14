@@ -56,11 +56,15 @@ class SettingsController < ApplicationController
   end
 
   def settings_params_with_password
-    params.require(:user).permit(:realdebrid_api_key, :default_language, :password, :password_confirmation, :current_password, preferred_languages: [])
+    params.require(:user).permit(:realdebrid_api_key, :default_language, :password, :password_confirmation, :current_password,
+      :child_account, :max_rating_age, :child_lock_password, :child_lock_password_confirmation, :child_lock_current_password,
+      preferred_languages: [])
   end
 
 
   def settings_params
-    params.require(:user).permit(:realdebrid_api_key, :default_language, preferred_languages: [])
+    params.require(:user).permit(:realdebrid_api_key, :default_language,
+      :child_account, :max_rating_age, :child_lock_password, :child_lock_password_confirmation, :child_lock_current_password,
+      preferred_languages: [])
   end
 end

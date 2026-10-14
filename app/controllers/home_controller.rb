@@ -4,22 +4,30 @@ class HomeController < ApplicationController
   before_action :authenticate_user!
 
   def index
+    policy = parental_content_policy
     catalog = Catalog::CinemetaClient.new
     # The four remote catalogs are fetched over HTTP; run them while the local
     # queries below execute instead of afterwards.
     catalogs_thread = Thread.new { HomeCatalogService.new(catalog).call }
-    @recommendations = RecommendationService.for(current_user)
-    @continue_watching = fetch_continue_watching
-    @recently_added = current_user.collection_entries.library.where("created_at > ?", 2.weeks.ago).recently_added.limit(20)
-    @wishlist_preview = current_user.collection_entries.wishlist.recently_added.limit(20)
+    @recommendations = filtered_result(policy, RecommendationService.for(current_user))
+    @continue_watching = policy.filter(fetch_continue_watching)
+    @recently_added = policy.filter(current_user.collection_entries.library.where("created_at > ?", 2.weeks.ago).recently_added.limit(20))
+    @wishlist_preview = policy.filter(current_user.collection_entries.wishlist.recently_added.limit(20))
     catalogs = catalogs_thread.value
-    @popular = catalogs.fetch(:popular)
-    @popular_shows = catalogs.fetch(:popular_shows)
-    @trending = catalogs.fetch(:trending)
-    @trending_shows = catalogs.fetch(:trending_shows)
+    @popular = filtered_result(policy, catalogs.fetch(:popular))
+    @popular_shows = filtered_result(policy, catalogs.fetch(:popular_shows))
+    @trending = filtered_result(policy, catalogs.fetch(:trending))
+    @trending_shows = filtered_result(policy, catalogs.fetch(:trending_shows))
   end
 
   private
+
+  # Child accounts only ever see titles within their rating limit.
+  def filtered_result(policy, result)
+    return result unless result.success?
+
+    ServiceResult.success(policy.filter(result.data))
+  end
 
   def fetch_continue_watching
     result = Playback::ContinueWatchingQuery.new(current_user).call

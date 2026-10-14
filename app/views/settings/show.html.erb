@@ -57,6 +57,43 @@
     </div>
 
     <div class="bg-sv-surface rounded-xl p-6 border border-sv-border">
+      <h2 class="text-lg font-semibold text-white mb-2">Child Account</h2>
+      <p class="text-xs text-sv-text-muted mb-4">Restrict this account to age-rated content. Search and browsing only return titles rated for the selected age, and anything above the limit cannot be opened or played even by direct URL. A child lock password is required to turn child status off or change the age limit later.</p>
+
+      <div class="flex items-center gap-2 mb-4">
+        <%= f.check_box :child_account, class: "rounded" %>
+        <%= f.label :child_account, "This is a child account", class: "text-sm font-medium text-white" %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :max_rating_age, "Maximum rating age", class: "block text-sm font-medium text-sv-text-muted mb-1.5" %>
+        <%= f.select :max_rating_age,
+          options_for_select(User::MAX_RATING_AGE_OPTIONS, @user.max_rating_age),
+          { include_blank: "Select an age limit" },
+          class: "input-field w-auto" %>
+        <p class="text-xs text-sv-text-muted mt-1">Titles whose rating is meant for viewers older than this are hidden and blocked. Unrated titles require the 18+ limit.</p>
+      </div>
+
+      <div class="border-t border-sv-border pt-4 space-y-3">
+        <h3 class="text-sm font-medium text-white">Child Lock Password</h3>
+        <% if @user.child_lock_set? %>
+          <div>
+            <%= f.label :child_lock_current_password, "Current Child Lock Password", class: "block text-sm font-medium text-sv-text-muted mb-1.5" %>
+            <%= f.password_field :child_lock_current_password, class: "input-field", autocomplete: "off", placeholder: "Required to turn child status off or change the age limit" %>
+          </div>
+        <% end %>
+        <div>
+          <%= f.label :child_lock_password, (@user.child_lock_set? ? "New Child Lock Password" : "Child Lock Password"), class: "block text-sm font-medium text-sv-text-muted mb-1.5" %>
+          <%= f.password_field :child_lock_password, class: "input-field", autocomplete: "new-password", placeholder: (@user.child_lock_set? ? "Leave blank to keep current" : "Required to enable child status") %>
+        </div>
+        <div>
+          <%= f.label :child_lock_password_confirmation, "Confirm Child Lock Password", class: "block text-sm font-medium text-sv-text-muted mb-1.5" %>
+          <%= f.password_field :child_lock_password_confirmation, class: "input-field", autocomplete: "new-password" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-sv-surface rounded-xl p-6 border border-sv-border">
       <h2 class="text-lg font-semibold text-white mb-2">Preferred Languages</h2>
       <p class="text-xs text-sv-text-muted mb-4">Select at least one language. Streams without at least one of your selected languages will be filtered out.</p>
 

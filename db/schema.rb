@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_22_050003) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_14_080000) do
   create_table "collection_entries", force: :cascade do |t|
     t.integer "content_type", default: 0, null: false
     t.datetime "created_at", null: false
@@ -190,11 +190,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_22_050003) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.boolean "child_account", default: false, null: false
+    t.string "child_lock_password_digest"
     t.datetime "created_at", null: false
     t.string "default_language"
     t.string "display_name"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.integer "max_rating_age"
     t.text "preferred_languages"
     t.text "realdebrid_api_key"
     t.datetime "remember_created_at"
