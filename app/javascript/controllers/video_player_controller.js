@@ -343,6 +343,9 @@ export default class extends Controller {
   }
 
   setupMseSource(streamUrl) {
+    // The new session restarts the element timeline, so the previous
+    // session's freeze clock must not carry over (see startProgressWatchdog).
+    this.stopProgressWatchdog()
     return this.playbackEngine().setupMseSource(streamUrl)
   }
 
@@ -982,6 +985,9 @@ export default class extends Controller {
           // The server closed the response early (e.g. Cloudflare 100s
           // origin timeout, or ffmpeg exited mid-stream). If the video
           // is not actually near the end, recover by reconnecting.
+          // Record the moment the body ended: the buffer state here says
+          // whether the cushion was still healthy when the stream died.
+          this.reportStall("stream_end")
           this.handlePrematureStreamEnd()
           break
         }
@@ -1005,6 +1011,7 @@ export default class extends Controller {
     } catch (e) {
       if (e.name === "AbortError") return
       console.warn("Stream fetch failed:", e)
+      this.reportStall("stream_error", { fetch_error: e?.name || "unknown" })
       this.handlePrematureStreamEnd()
     }
     finally {

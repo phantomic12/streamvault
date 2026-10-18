@@ -32,14 +32,29 @@ export class PlaybackRecoveryMonitor {
   }
 
   startProgressWatchdog() {
-    if (this.player.progressWatchdogArmed) return
-    this.player.lastProgressPosition = this.player.videoTarget.currentTime
-    this.player.lastProgressTime = Date.now()
-    this.player.lastBufferEnd = this.player.currentBufferEnd()
-    this.player.lastBufferDataTime = Date.now()
-    this.player.lastProgressEventTime = Date.now()
-    this.player.progressWatchdogArmed = true
-    this.player.tickProgressWatchdog()
+    // Rebaseline when the watchdog was idle, and whenever a new media
+    // session reset the element timeline backwards: a seek or a recovery
+    // restarts currentTime near zero while the previous session's
+    // baseline (a much larger relative position) survives.  Without this
+    // the clock reads the reset as "no progress" and fires a false silent
+    // freeze 20s later, tearing the stream down for a black gap even
+    // though playback is advancing normally.
+    const player = this.player
+    const timelineReset = player.videoTarget.currentTime < (player.lastProgressPosition ?? 0) - 0.5
+    if (!player.progressWatchdogArmed || timelineReset) this.rebaseProgressClock()
+    if (player.progressWatchdogArmed) return
+
+    player.progressWatchdogArmed = true
+    player.tickProgressWatchdog()
+  }
+
+  rebaseProgressClock() {
+    const player = this.player
+    player.lastProgressPosition = player.videoTarget.currentTime
+    player.lastProgressTime = Date.now()
+    player.lastBufferEnd = player.currentBufferEnd()
+    player.lastBufferDataTime = Date.now()
+    player.lastProgressEventTime = Date.now()
   }
 
   tickProgressWatchdog() {
@@ -59,6 +74,15 @@ export class PlaybackRecoveryMonitor {
     const position = player.videoTarget.currentTime
     const elapsed = now - player.lastProgressTime
     const playbackAdvanced = position > player.lastProgressPosition + 0.1
+
+    // A timeline reset (a new media session after a seek or recovery)
+    // restarts currentTime near zero.  That is not a decoder stall: adopt
+    // the new timeline instead of counting the drop toward the freeze
+    // timeout, which would otherwise fire a false silent freeze.
+    if (position < player.lastProgressPosition - 0.5) {
+      this.resetProgressBaseline()
+      return
+    }
 
     if (playbackAdvanced) {
       player.lastProgressPosition = position
@@ -116,11 +140,7 @@ export class PlaybackRecoveryMonitor {
 
   resetProgressBaseline() {
     if (!this.player.progressWatchdogArmed) return
-    this.player.lastProgressPosition = this.player.videoTarget.currentTime
-    this.player.lastProgressTime = Date.now()
-    this.player.lastBufferEnd = this.player.currentBufferEnd()
-    this.player.lastBufferDataTime = Date.now()
-    this.player.lastProgressEventTime = Date.now()
+    this.rebaseProgressClock()
   }
 
   stopProgressWatchdog() {
@@ -281,6 +301,10 @@ export class PlaybackRecoveryMonitor {
       playback_id: player.playbackId,
       path: player.playbackPath(),
       position: Math.round(player.currentPlaybackPosition() * 10) / 10,
+      current_time: Math.round(player.videoTarget.currentTime * 10) / 10,
+      seeking: player.videoTarget.seeking,
+      baseline_position: Math.round((player.lastProgressPosition ?? 0) * 10) / 10,
+      baseline_age_ms: player.lastProgressTime ? Date.now() - player.lastProgressTime : 0,
       buffer_ahead: Math.round(player.bufferedAheadOfCurrent() * 10) / 10,
       recovery_count: player.streamRecoveryAttempts,
       ready_state: player.videoTarget.readyState,
