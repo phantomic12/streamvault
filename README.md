@@ -4,9 +4,17 @@
 
 <h1 align="center">StreamVault</h1>
 
-<p align="center"><em>Your personal cinema — search, stream, and manage movies and TV shows, all in one place.</em></p>
+<p align="center"><em>Your personal cinema: search, stream, and manage movies and TV shows, all in one place.</em></p>
 
 <p align="center">
+  <a href="https://github.com/vitobotta/streamvault/actions/workflows/ci.yml"><img src="https://github.com/vitobotta/streamvault/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://github.com/vitobotta/streamvault/releases/latest"><img src="https://img.shields.io/github/v/release/vitobotta/streamvault?color=4f63e6" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/ruby-4.0.5-CC342D?logo=ruby&amp;logoColor=white" alt="Ruby 4.0.5">
+  <img src="https://img.shields.io/badge/rails-8.1-CC0000?logo=rubyonrails&amp;logoColor=white" alt="Rails 8.1">
+</p>
+
+<p align="center">
+  <a href="#screenshots">Screenshots</a> ·
   <a href="#features">Features</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#environment-variables">Configuration</a> ·
@@ -24,9 +32,24 @@ The player supports movies and episodic TV, multiple audio tracks, embedded and 
 
 StreamVault does not ship with a media catalogue or maintain a persistent library of source files. Media is requested from the services you configure and delivered on demand; source data may pass through temporary buffers while it is proxied or transcoded.
 
+## Screenshots
+
+![Home](docs/screenshots/home.jpg)
+
+<sub>Continue watching, recommendations, your library and wishlist on one page.</sub>
+
+![Title page](docs/screenshots/title.jpg)
+
+<sub>Title pages carry the backdrop, ratings and every source, with the best cached one ready to play.</sub>
+
+<p align="center">
+  <img src="docs/screenshots/mobile.jpg" width="300" alt="StreamVault on a phone"><br>
+  <sub>On a phone: the same rails, with a floating bottom bar.</sub>
+</p>
+
 ## Disclaimer & responsible use
 
-StreamVault is a **general-purpose media client** — like a web browser or BitTorrent client, it is neutral regarding what users choose to access. The repository does not include or publish copyrighted media or pre-configured lists of pirated material. The running application proxies or transcodes only the data requested by its operator and may buffer it temporarily for playback. All discovery and streaming is driven by the user's own choices and subscriptions.
+StreamVault is a **general-purpose media client** - like a web browser or BitTorrent client, it is neutral regarding what users choose to access. The repository does not include or publish copyrighted media or pre-configured lists of pirated material. The running application proxies or transcodes only the data requested by its operator and may buffer it temporarily for playback. All discovery and streaming is driven by the user's own choices and subscriptions.
 
 **The author does not endorse, encourage, or support the use of StreamVault to access copyrighted content without proper authorisation.** Users are solely responsible for ensuring they have the legal right to access any content they stream. StreamVault is intended for use with:
 
@@ -56,53 +79,53 @@ StreamVault (Rails app)
                              synchronises timestamps, and burns bitmap subtitles
 ```
 
-1. **Search** — Type a title. StreamVault queries metadata catalogues (Cinemeta) and returns matching content with posters, ratings, and plots.
-2. **Pick a stream** — Each title shows a list of available streams with quality (4K, 1080p, 720p), file size, and audio languages. Streams are sorted by your language preferences.
-3. **Press play** — StreamVault resolves the selected stream through RealDebrid and probes its tracks. Compatible media plays directly; other sources are remuxed or transcoded into browser-friendly H.264/AAC fragmented MP4 or HLS. Audio timestamps are normalised, and bitmap subtitles are burned in when necessary.
-4. **Watch** — The custom in-browser player handles playback with seeking, audio track switching, subtitles, and progress tracking. Close the tab and come back later — you'll resume right where you left off.
+1. **Search**: Type a title. StreamVault queries metadata catalogues (Cinemeta) and returns matching content with posters, ratings, and plots.
+2. **Pick a stream**: Each title shows a list of available streams with quality (4K, 1080p, 720p), file size, and audio languages. Streams are sorted by your language preferences.
+3. **Press play**: StreamVault resolves the selected stream through RealDebrid and probes its tracks. Compatible media plays directly; other sources are remuxed or transcoded into browser-friendly H.264/AAC fragmented MP4 or HLS. Audio timestamps are normalised, and bitmap subtitles are burned in when necessary.
+4. **Watch**: The custom in-browser player handles playback with seeking, audio track switching, subtitles, and progress tracking. Close the tab and come back later - you'll resume right where you left off.
 
 ## Features
 
 ### Discovery & browsing
-- **Search** — Find any movie or TV show by title, with rich metadata: posters, plots, cast, genres, age ratings.
-- **Ratings** — IMDb, Rotten Tomatoes, and Metacritic scores displayed on every title (via OMDB).
-- **Popular & Trending** — Browse what's popular and trending right now, for both movies and shows.
-- **Recommendations** — A "Recommended for You" carousel that learns from your watch history using TMDB's collaborative filtering ("viewers also watched…").
-- **Content detail pages** — Full overview with poster, plot, cast, ratings, and available streams.
+- **Search**: Find any movie or TV show by title, with rich metadata: posters, plots, cast, genres, age ratings.
+- **Ratings**: IMDb, Rotten Tomatoes, and Metacritic scores displayed on every title (via OMDB).
+- **Popular & Trending**: Browse what's popular and trending right now, for both movies and shows.
+- **Recommendations**: A "Recommended for You" carousel that learns from your watch history using TMDB's collaborative filtering ("viewers also watched…").
+- **Content detail pages**: Full overview with poster, plot, cast, ratings, and available streams.
 
 ### Library management
-- **Library** — Add movies and shows to your personal library. Track what you've watched and what's pending.
-- **Wishlist** — Save content for later. Move items to your library when you're ready to watch.
-- **Watch History** — See everything you've watched, with progress indicators. Clear history anytime.
-- **Continue Watching** — Resume any title from where you left off, right from the home page.
+- **Library**: Add movies and shows to your personal library. Track what you've watched and what's pending.
+- **Wishlist**: Save content for later. Move items to your library when you're ready to watch.
+- **Watch History**: See everything you've watched, with progress indicators. Clear history anytime.
+- **Continue Watching**: Resume any title from where you left off, right from the home page.
 
 ### TV show support
-- **Season & episode browser** — Browse seasons and episodes with air dates, overviews, and progress tracking per episode.
-- **Episode streaming** — Stream individual episodes with the same quality and language options as movies.
-- **Auto-advance** — When an episode finishes, the next one is ready to go.
-- **Skip to the next episode** — An optional button appears at a labelled closing-credits chapter, or during the last 90 seconds if no usable marker exists (capped to the final 10% of short episodes). Only shown for TV episodes with a following catalogue episode that is not known to be unreleased. No countdown or automatic skip during credits; seek backwards to hide it. Chapter timing follows the selected video file, while the fallback is only a near-end estimate. Stream availability is resolved when advancing.
+- **Season & episode browser**: Browse seasons and episodes with air dates, overviews, and progress tracking per episode.
+- **Episode streaming**: Stream individual episodes with the same quality and language options as movies.
+- **Auto-advance**: When an episode finishes, the next one is ready to go.
+- **Skip to the next episode**: An optional button appears at a labelled closing-credits chapter, or during the last 90 seconds when no usable marker exists (capped to the final 10% of short episodes). It is offered only when a following catalogue episode exists and is not known to be unreleased; there is no countdown or automatic skip, and seeking back hides it.
 
 ### Streaming & playback
-- **Adaptive playback paths** — Uses native direct play when possible, low-cost video remuxing when safe, and full transcoding only when required.
-- **Custom video player** — Built from scratch with seeking, volume control, playback speed, and full keyboard support.
-- **Audio track selection** — Switch between audio languages when a stream has multiple tracks.
-- **A/V timestamp synchronisation** — Corrects source timestamp gaps and keeps resumed, sought, and recovered streams aligned.
-- **Subtitles** — Select from embedded subtitle tracks (text and image-based). Falls back to external subtitles from SubDL when none are embedded.
-- **Burned subtitles** — Image-based subtitles (PGS, VobSub) are burned onto the video via FFmpeg since browsers can't render them natively.
-- **Resume playback** — Automatically resumes from your last position.
-- **Stall recovery** — If a stream stalls, the player attempts automatic recovery before failing.
-- **Progress tracking** — Watch progress is saved every few seconds and synced across sessions.
+- **Adaptive playback paths**: Uses native direct play when possible, low-cost video remuxing when safe, and full transcoding only when required.
+- **Custom video player**: Built from scratch with seeking, volume control, playback speed, and full keyboard support.
+- **Audio track selection**: Switch between audio languages when a stream has multiple tracks.
+- **A/V timestamp synchronisation**: Corrects source timestamp gaps and keeps resumed, sought, and recovered streams aligned.
+- **Subtitles**: Select from embedded subtitle tracks (text and image-based). Falls back to external subtitles from SubDL when none are embedded.
+- **Burned subtitles**: Image-based subtitles (PGS, VobSub) are burned onto the video via FFmpeg since browsers can't render them natively.
+- **Resume playback**: Automatically resumes from your last position.
+- **Stall recovery**: If a stream stalls, the player attempts automatic recovery before failing.
+- **Progress tracking**: Watch progress is saved every few seconds and synced across sessions.
 
 ### Personalisation
-- **Language preferences** — Choose your preferred audio languages (16 supported). Streams are filtered and sorted to prioritise your languages.
-- **Default language** — Set which language is selected by default when starting a stream.
-- **Per-user configuration** — Each user has their own library, history, wishlist, and settings. API keys are encrypted at rest.
+- **Language preferences**: Choose your preferred audio languages (17 supported). Streams are filtered and sorted to prioritise your languages.
+- **Default language**: Set which language is selected by default when starting a stream.
+- **Per-user configuration**: Each user has their own library, history, wishlist, and settings. API keys are encrypted at rest.
 
 ### Interface
-- **Dark theme** — Easy on the eyes, with an indigo-violet accent on dark neutral surfaces.
-- **Responsive** — Sidebar navigation on desktop, bottom navigation bar on mobile.
-- **Installable PWA** — Add StreamVault to your home screen for a full-screen, app-like experience.
-- **Carousels** — Horizontally scrollable content rows with smooth navigation buttons.
+- **Cinema-style dark theme**: Cool ink surfaces, an indigo accent kept for the primary action and progress, and an editorial serif for titles paired with a cleaner sans for controls.
+- **Responsive layout**: A persistent sidebar on desktop and a floating bottom bar on mobile.
+- **Content rails**: Horizontally scrollable rows with title counts, scroll arrows and per-card progress.
+- **Designed empty states**: Library, wishlist, search and history explain what belongs there and offer the next action instead of a blank page.
 
 ## Integrations & services
 
@@ -110,17 +133,17 @@ StreamVault relies on several external services. Here's what each one does and h
 
 | Service | Role | Required? | How to get access |
 |---------|------|-----------|-------------------|
-| **RealDebrid** | Resolves selected files and provides direct streaming links | **Yes** — streaming won't work without it | Sign up at [real-debrid.com](https://real-debrid.com), then get your API key at [real-debrid.com/apitoken](https://real-debrid.com/apitoken) |
+| **RealDebrid** | Resolves selected files and provides direct streaming links | **Yes** - streaming won't work without it | Sign up at [real-debrid.com](https://real-debrid.com), then get your API key at [real-debrid.com/apitoken](https://real-debrid.com/apitoken) |
 | **Torrentio** | Finds available streams for a given title | Yes (default provider) | Works out of the box with the public instance. May need a proxy if your server IP is blocked (see below) |
-| **Comet** | Alternative stream provider — self-hosted, independent of Torrentio | Optional (recommended) | Self-host via Docker — see [proxy/comet](proxy/comet) |
-| **Cinemeta** | Provides content metadata (titles, posters, plots, episodes) | Yes (built-in) | No setup needed — uses the public Stremio metadata service |
+| **Comet** | Alternative stream provider - self-hosted, independent of Torrentio | Optional (recommended) | Self-host via Docker - see [proxy/comet](proxy/comet) |
+| **Cinemeta** | Provides content metadata (titles, posters, plots, episodes) | Yes (built-in) | No setup needed - uses the public Stremio metadata service |
 | **OMDB** | Enriches content with IMDb, Rotten Tomatoes, and Metacritic ratings | Yes | Get a free API key at [omdbapi.com/apikey.aspx](https://www.omdbapi.com/apikey.aspx) |
 | **TMDB** | Powers the "Recommended for You" feature using your watch history | Optional | Create an account at [themoviedb.org](https://www.themoviedb.org), then get a Read Access Token at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api) |
 | **SubDL** | Provides external subtitles when embedded ones aren't available | Optional | Get a free API key at [subdl.com/panel/api](https://subdl.com/panel/api) |
 
 ### How the services work together
 
-- **Torrentio and Comet** are both stream *providers*. They search torrent networks for available streams and return a list with quality, size, and language information. You can use either one or both — when both are configured (`STREAM_PROVIDER=auto`), StreamVault queries them in parallel and picks the best stream regardless of which provider found it. If one is down, the other fills in.
+- **Torrentio and Comet** are both stream *providers*. They search torrent networks for available streams and return a list with quality, size, and language information. You can use either one or both - when both are configured (`STREAM_PROVIDER=auto`), StreamVault queries them in parallel and picks the best stream regardless of which provider found it. If one is down, the other fills in.
 
 - **RealDebrid** is the *resolver*. Once you pick a stream, StreamVault sends its magnet link to RealDebrid, which retrieves or resolves the selected file and returns a direct HTTPS link. StreamVault does not add the source file to a persistent local media library, but its bytes pass through the server on demand and may be buffered temporarily during proxying or transcoding.
 
@@ -128,7 +151,7 @@ StreamVault relies on several external services. Here's what each one does and h
 
 - **Cinemeta and OMDB** are the *librarians*. Cinemeta (Stremio's metadata service) provides titles, posters, plots, cast, and episode lists. OMDB adds ratings from IMDb, Rotten Tomatoes, and Metacritic.
 
-- **TMDB** is the *recommender*. It looks at what you've watched and finds similar content that other viewers enjoyed — powering the "Recommended for You" carousel.
+- **TMDB** is the *recommender*. It looks at what you've watched and finds similar content that other viewers enjoyed - powering the "Recommended for You" carousel.
 
 - **SubDL** is the *subtitle backup*. When a stream has no embedded subtitles, StreamVault fetches external ones from SubDL so you always have subtitles available.
 
@@ -168,7 +191,7 @@ cp .env.example .env
 openssl rand -hex 64  # SECRET_KEY_BASE
 openssl rand -hex 32  # run separately for each encryption key and POSTGRES_PASSWORD
 
-# Edit .env — see the configuration table below
+# Edit .env - see the configuration table below
 ${EDITOR:-nano} .env
 
 # Build and start the container
@@ -179,7 +202,7 @@ At minimum, set `SECRET_KEY_BASE`, the three `ACTIVE_RECORD_ENCRYPTION_*` values
 
 The app is available at `http://localhost:3000` unless you change `PORT`.
 
-Assets are precompiled inside the image during build — no local Ruby or Node installation needed. The PostgreSQL database is persisted in a local `./data` directory and survives container rebuilds.
+Assets are precompiled inside the image during build - no local Ruby or Node installation needed. The PostgreSQL database is persisted in a local `./data` directory and survives container rebuilds.
 
 ### Create your first user
 
@@ -198,7 +221,7 @@ To enable self-registration, set `ENABLE_SIGNUPS=true` in `.env` and restart.
 
 ### Configure your RealDebrid key
 
-After logging in, go to **Settings** and enter your RealDebrid API key. The app verifies the key automatically and shows a confirmation. Your key is encrypted at rest using Active Record Encryption — it never appears in logs or is transmitted in plain text.
+After logging in, go to **Settings** and enter your RealDebrid API key. The app verifies the key automatically and shows a confirmation. Your key is encrypted at rest using Active Record Encryption - it never appears in logs or is transmitted in plain text.
 
 ### Auto-start on boot
 
@@ -268,7 +291,7 @@ Some of the services StreamVault uses are behind **Cloudflare**, which may block
 
 ### The Torrentio problem
 
-The public Torrentio instance (`torrentio.strem.fun`) is behind Cloudflare. Cloudflare frequently blocks or rate-limits requests from datacentre IPs — meaning your VPS might not be able to reach it. Symptoms include 403 errors, empty stream lists, or intermittent failures during peak hours.
+The public Torrentio instance (`torrentio.strem.fun`) is behind Cloudflare. Cloudflare frequently blocks or rate-limits requests from datacentre IPs - meaning your VPS might not be able to reach it. Symptoms include 403 errors, empty stream lists, or intermittent failures during peak hours.
 
 ### The solution: a two-server setup
 
@@ -287,11 +310,11 @@ The author's deployment uses a **two-server architecture** that separates comput
 └─────────────────────────────────────┘             └──────────────────────────────────┘
 ```
 
-- **Dedicated server** (e.g. Hetzner dedicated, OVH Eco) — runs StreamVault, PostgreSQL, and FFmpeg. This machine needs enough CPU and RAM for smooth transcoding. Its IP may or may not be blocked by Cloudflare — that's fine, because it doesn't talk to Torrentio directly.
+- **Dedicated server** (e.g. Hetzner dedicated, OVH Eco) - runs StreamVault, PostgreSQL, and FFmpeg. This machine needs enough CPU and RAM for smooth transcoding. Its IP may or may not be blocked by Cloudflare - that's fine, because it doesn't talk to Torrentio directly.
 
-- **Cheap VPS** (e.g. €3–5/month from a provider with clean IPs) — runs the Torrentio proxy and/or Comet. This machine's IP is not blocked by Cloudflare, so it can reach Torrentio. It's lightweight (proxies use ~5 MB RAM; Comet uses ~512 MB).
+- **Cheap VPS** (e.g. €3–5/month from a provider with clean IPs) - runs the Torrentio proxy and/or Comet. This machine's IP is not blocked by Cloudflare, so it can reach Torrentio. It's lightweight (proxies use ~5 MB RAM; Comet uses ~512 MB).
 
-- **Tailscale** (free for personal use) — connects both machines securely over an encrypted WireGuard tunnel. No ports need to be opened on either machine — Tailscale handles it. The app on the dedicated server reaches the proxy on the VPS via its Tailscale IP (`100.x.x.x`).
+- **Tailscale** (free for personal use) - connects both machines securely over an encrypted WireGuard tunnel. No ports need to be opened on either machine - Tailscale handles it. The app on the dedicated server reaches the proxy on the VPS via its Tailscale IP (`100.x.x.x`).
 
 ### Proxy options
 
@@ -302,7 +325,7 @@ StreamVault includes three proxy setups in the `proxy/` directory:
 A lightweight forward proxy that routes Torrentio and Cinemeta requests through a VPS with a clean IP. Uses ~5 MB RAM, handles HTTPS transparently.
 
 - **When you need it:** Your server's IP is blocked by Cloudflare (403 errors, empty stream lists).
-- **How it works:** StreamVault sends requests *through* the proxy (via `TORRENTIO_PROXY` env var). The proxy forwards them to Torrentio. Tinyproxy is locked down with an IP allowlist and domain whitelist — it can only reach torrentio and Cinemeta domains.
+- **How it works:** StreamVault sends requests *through* the proxy (via `TORRENTIO_PROXY` env var). The proxy forwards them to Torrentio. Tinyproxy is locked down with an IP allowlist and domain whitelist - it can only reach torrentio and Cinemeta domains.
 - **Setup:** See [`proxy/torrentio/README.md`](proxy/torrentio/README.md) for full instructions.
 
 #### 2. Comet (self-hosted stream provider)
@@ -324,22 +347,22 @@ If you run StreamVault on your home computer (which has a residential IP that Re
 
 | Your setup | Proxy needed? |
 |-----------|---------------|
-| Running at home (residential IP) | Usually no — residential IPs aren't blocked by Cloudflare |
-| VPS with a clean IP | Try first — if you get 403s or empty streams, set up the Torrentio proxy |
-| VPS with a blocked IP | Yes — set up the Torrentio proxy or self-host Comet |
-| Dedicated server with blocked IP | Yes — run the app on the dedicated server, proxy through a cheap VPS |
+| Running at home (residential IP) | Usually no - residential IPs aren't blocked by Cloudflare |
+| VPS with a clean IP | Try first - if you get 403s or empty streams, set up the Torrentio proxy |
+| VPS with a blocked IP | Yes - set up the Torrentio proxy or self-host Comet |
+| Dedicated server with blocked IP | Yes - run the app on the dedicated server, proxy through a cheap VPS |
 
 ### STREAM_PROVIDER modes
 
 | Value | Primary | Fallback | When to use |
 |-------|---------|----------|-------------|
-| `torrentio` | Torrentio | — | Default, simplest setup (no Comet needed) |
+| `torrentio` | Torrentio | n/a | Default, simplest setup (no Comet needed) |
 | `comet` | Comet | Torrentio | Explicit Comet-first with Torrentio fallback |
-| `auto` | Comet (if `COMET_URL` set) | Torrentio | **Recommended** — best of both worlds |
+| `auto` | Comet (if `COMET_URL` set) | Torrentio | **Recommended** - best of both worlds |
 
 ## Testing
 
-Local development uses Ruby 4.0.5. PostgreSQL and FFmpeg must be available; the JavaScript regression suite uses Node's built-in test runner and needs no npm install.
+Local development uses Ruby 4.0.5. Development and test run on SQLite, so no database server is needed; FFmpeg must be installed to exercise transcoding. The JavaScript regression suite uses Node's built-in test runner and needs no npm install.
 
 ```bash
 # Prepare Ruby dependencies and the test database
@@ -349,8 +372,8 @@ bin/rails db:prepare
 # Run the Rails suite
 bundle exec rspec
 
-# Run video-player controller regressions
-node --test spec/javascript/video_player_controller_test.mjs
+# Run the player regressions (450 examples, no npm install needed)
+node --test spec/javascript/*_test.mjs
 
 # Run Ruby style checks
 bin/rubocop
