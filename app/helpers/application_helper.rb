@@ -31,4 +31,13 @@ module ApplicationHelper
     initials = name.split(/[\s._-]+/).reject(&:blank?).first(2).map { |part| part[0] }.join
     (initials.presence || name[0] || "?").upcase
   end
+
+  # Favicons are cached by browsers for days and are not revalidated on reload.
+  # Version the URL from the file's mtime so a changed icon gets a new address.
+  def versioned_icon_path(path)
+    file = Rails.root.join("public", path.delete_prefix("/"))
+    return path unless file.file?
+
+    "#{path}?v=#{file.mtime.to_i}"
+  end
 end
